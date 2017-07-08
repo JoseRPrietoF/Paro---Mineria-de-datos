@@ -13,7 +13,7 @@
     }
 
 </style>
-<svg width="960" height="500"></svg>
+<svg width="1500" height="500"></svg>
 <script src="//d3js.org/d3.v4.min.js"></script>
 <script>
     var svg = d3.select("svg"),
@@ -44,10 +44,10 @@
         //var parse = d3.time.format("%Y-%m-%d").parse;
         if (error) throw error;
         var parseTiempo = d3.timeParse("%Y%b%d");
-        console.log("------")
+        console.log("-----------")
         console.log(" Data " , data)
         console.log(" Data " , data[0])
-        console.log("------")
+        console.log("----------")
         cities = []
         //var cities = data.columns.slice(1,3).map(function (id) {
         //var cities = data.forEach(function(id) {
@@ -76,8 +76,8 @@
                 dict.push({date: fecha, temperature: value})
 
             }
-            console.log("Municipio: " , nombre)
-            console.log("valores: " , dict)
+            /*console.log("Municipio: " , nombre)
+            console.log("valores: " , dict)*/
             cities.push( {
 
                 // id = nombre del municipio
@@ -85,9 +85,10 @@
                 values: dict
             })
         };
-
+        console.log("------------------")
         console.log("Cities:")
         console.log(cities)
+        console.log("Cities[0] " , cities[0])
 
         dominioYX = x.domain(d3.extent(cities[0].values, function (d) {
             fecha = d.date
@@ -100,9 +101,8 @@
 
             return fecha;
         }));
-        console.log("Dominio de X = " , dominioYX)
-        console.log("Cities " , cities)
-        console.log("Cities[0] " , cities[0])
+)
+
 
         /*dominioY = y.domain([
             d3.min(cities[0].values, function (c) {
@@ -116,8 +116,8 @@
         dominioY = y.domain([
             d3.min(cities, function (c) {
                 return d3.min(c.values, function (d) {
-                    console.log("d --- " , d)
-                    console.log("d --- " , d.temperature)
+                    /*console.log("d --- " , d)
+                    console.log("d --- " , d.temperature)*/
                     //console.log("y.domain d3.min " , d)
                     return d.temperature;
                 });
@@ -132,7 +132,7 @@
         console.log("Dominio de Y = " , dominioY)
 
         z.domain(cities.map(function (c) {
-            console.log("z.domain c " , c)
+            //console.log("z.domain c " , c)
             return c.id;
         }));
 
@@ -196,8 +196,8 @@
             .attr("dy", "0.35em")
             .style("font", "10px sans-serif")
             .text(function (d) {
-                console.log("-----.text-----")
-                console.log("text d: ", d)
+                /*console.log("-----.text-----")
+                console.log("text d: ", d)*/
                 return d.id;
             });
     });    // fin csv
