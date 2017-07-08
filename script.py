@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import os, datetime
+import os, datetime, json, time, io
 from dateutil.relativedelta import relativedelta
 import matplotlib.pyplot as plt
 from matplotlib import style
@@ -65,7 +65,7 @@ def merge_csv(path, dato="tot_paro_registrado", dir = "results",file_name_dest=N
     print(res_municipios_total)
     if not os.path.isdir(dir):
         os.mkdir(dir)
-    res_municipios_total_csv = res_municipios_total.to_csv(path_destino, sep=';', encoding='utf-8')
+    res_municipios_total_csv = res_municipios_total.to_csv(path_destino, sep=',', encoding='utf-8',header=True)
 
     return res_municipios_total_csv,res_municipios_total
 
@@ -107,9 +107,10 @@ def copy_into_dict(d=dict(), keys="",values=[]):
     return d
 
 
-csv, df = merge_csv(path)
 
-row = df.loc['Manuel']
+csv, df = merge_csv(path, file_name_dest="tot_paro_registrado_comas")
+
+row = df.loc['Ondara']
 row.plot(kind='bar')
 plt.legend(loc=4)
 plt.xlabel('Fechas')
