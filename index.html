@@ -46,13 +46,17 @@
         var parseTiempo = d3.timeParse("%Y%b%d");
         console.log("------")
         console.log(" Data " , data)
-        console.log(" Data " , data.columns.slice(1,3))
+        console.log(" Data " , data[0])
         console.log("------")
-        var cities = data.columns.slice(1,3).map(function (id) {
+        cities = []
+        //var cities = data.columns.slice(1,3).map(function (id) {
+        //var cities = data.forEach(function(id) {
+        l = data.length
+        for(var n=0; n < 3; n++ ){
             // id = fecha -> 2008-05-01
             console.log("--------------------------")
-            console.log("id " , id)
-            municipio = data[0]
+            console.log("id " , n)
+            municipio = data[n]
             nombre = municipio[""]
             delete municipio[""]; // eliminamos el nombre
             console.log("Municipio : " , municipio)
@@ -74,18 +78,17 @@
             }
             console.log("Municipio: " , nombre)
             console.log("valores: " , dict)
-            return {
+            cities.push( {
 
                 // id = nombre del municipio
                 id: nombre,
                 values: dict
-            };
-        });
+            })
+        };
 
-        /*console.log("Cities:")
+        console.log("Cities:")
         console.log(cities)
-        console.log("data " , data)
-        console.log("cities[0] " , cities[0])*/
+
         dominioYX = x.domain(d3.extent(cities[0].values, function (d) {
             fecha = d.date
 
@@ -101,13 +104,29 @@
         console.log("Cities " , cities)
         console.log("Cities[0] " , cities[0])
 
-        dominioY = y.domain([
+        /*dominioY = y.domain([
             d3.min(cities[0].values, function (c) {
                 return c.temperature
             }
              ),
             d3.max(cities[0].values, function (c) {
                 return c.temperature
+            })
+        ]);*/
+        dominioY = y.domain([
+            d3.min(cities, function (c) {
+                return d3.min(c.values, function (d) {
+                    console.log("d --- " , d)
+                    console.log("d --- " , d.temperature)
+                    //console.log("y.domain d3.min " , d)
+                    return d.temperature;
+                });
+            }
+             ),
+            d3.max(cities, function (c) {
+                return d3.max(c.values, function (d) {
+                    return d.temperature;
+                });
             })
         ]);
         console.log("Dominio de Y = " , dominioY)
@@ -142,8 +161,8 @@
         city.append("path")
             .attr("class", "line")
             .attr("d", function (d) {
-                console.log("----------city.append path - attr d ---------")
-                console.log("d: ", d)
+                //console.log("----------city.append path - attr d ---------")
+                //console.log("d: ", d)
 
                 return line(d.values);
             })
@@ -153,8 +172,8 @@
 
         city.append("text")
             .datum(function (d) {
-                console.log("----------city.append text datum---------")
-                console.log("d: ", d)
+                //console.log("----------city.append text datum---------")
+                //console.log("d: ", d)
                 return {id: d.id, value: d.values[d.values.length - 1]};
             })
             .attr("transform", function (d) {
@@ -164,13 +183,13 @@
 
                 fecha = parseTime(year+""+month+"01")*/
                 fecha = d.value.date
-                console.log("----------Transform---------")
+                /*console.log("----------Transform---------")
                 console.log("transform date " , fecha)
                 console.log("trasnform x(d.value.date) " , x(fecha))
                 console.log("trasnform d.value " , d.value)
                 console.log("trasnform d.value.temperature " , d.value.temperature)
                 console.log("trasnform y(d.value.temperature) " , y(d.value.temperature))
-                console.log("-------------------")
+                console.log("-------------------")*/
                 return "translate(" + x(fecha) + "," + y(d.value.temperature) + ")";
             })
             .attr("x", 3)
