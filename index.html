@@ -333,6 +333,18 @@
             //console.log("z.domain c " , c)
             return c.id;
         }));
+        var ax = g.selectAll(".axis--y")
+
+        ax.remove()
+        g.append("g")
+            .attr("class", "axis axis--y")
+            .call(d3.axisLeft(y))
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", "0.71em")
+            .attr("fill", "#000")
+            .text("Paro, ºP");
 
         // datos
         var city = g.selectAll(".city")

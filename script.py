@@ -120,11 +120,10 @@ def codigos_municipios(df, dir = "results",file_name_dest=None):
 csv, df, df_all = merge_csv(path, file_name_dest="tot_paro_registrado_comas")
 
 codigos_municipios(df_all)
-"""
-row = df.loc['Ondara']
+
+row = df.loc['Valencia']
 row.plot(kind='bar')
 plt.legend(loc=4)
 plt.xlabel('Fechas')
 plt.ylabel('Paro total registrado')
 plt.show()
-"""
