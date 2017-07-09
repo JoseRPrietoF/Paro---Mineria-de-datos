@@ -1,6 +1,15 @@
 <!DOCTYPE html>
+<html>
 <meta charset="utf-8">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
 <style>
+    .box {
+        position: static;
+        border-style: solid;
+        border-color: #ff0000 #0000ff;
+    }
 
     .axis--x path {
         display: none;
@@ -16,6 +25,11 @@
 <svg width="1500" height="500"></svg>
 <script src="//d3js.org/d3.v4.min.js"></script>
 <script>
+
+    var cities = {}
+    var data = {}
+    var muns = {}
+    var cod_muns = {}
     var svg = d3.select("svg"),
         margin = {top: 20, right: 80, bottom: 30, left: 50},
         width = svg.attr("width") - margin.left - margin.right,
@@ -23,9 +37,9 @@
         g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     var parseTime = d3.timeParse("%Y%m%d");
-    console.log("-------------------")
-    console.log("Width: " , width , " Height: " , height)
-    console.log("-------------------")
+    /*console.log("-------------------")
+     console.log("Width: " , width , " Height: " , height)
+     console.log("-------------------")*/
     var x = d3.scaleTime().range([0, width]),
         y = d3.scaleLinear().range([height, 0]),
         z = d3.scaleOrdinal(d3.schemeCategory10);
@@ -38,98 +52,124 @@
         .y(function (d) {
             return y(d.temperature);
         });
+    d3.csv("results/codigos_municipios.csv", function (error, data) {
+        for (var i = 0; i < data.length; i++) {
+
+            cod_muns[data[i].cod_mun] = data[i].mun
+        }
+        //console.log("cod muns: " , cod_muns)
+    })
 
     //d3.tsv("data.tsv", type, function (error, data) {
+
+    console.log("f")
     d3.csv("results/tot_paro_registrado_comas.csv", type, function (error, data) {
+        console.log("Fun csv")
         //var parse = d3.time.format("%Y-%m-%d").parse;
         if (error) throw error;
         var parseTiempo = d3.timeParse("%Y%b%d");
-        console.log("-----------")
-        console.log(" Data " , data)
-        console.log(" Data " , data[0])
-        console.log("------")
+        this.data = data
+        /*console.log("-----------")
+         console.log(" Data " , data)
+         console.log(" Data " , data[0])
+         console.log("------")*/
+
+        l = data.length
+        for (var n = 0; n < l; n++) {
+            m = data
+                [n][""]
+            muns[m] = n
+        }
+        console.log(muns)
         cities = []
         //var cities = data.columns.slice(1,3).map(function (id) {
         //var cities = data.forEach(function(id) {
-        l = data.length
-        for(var n=0; n < 3; n++ ){
+
+        for (var n = 0; n < 3; n++) {
             // id = fecha -> 2008-05-01
-            console.log("--------------------------")
-            console.log("id " , n)
+            /*console.log("--------------------------")
+             console.log("id " , n)*/
             municipio = data[n]
             nombre = municipio[""]
-            delete municipio[""]; // eliminamos el nombre
-            console.log("Municipio : " , municipio)
+            var munis = jQuery.extend({}, municipio) // hacemos una copia, para no borrar el original
+            delete munis[""]; // eliminamos el nombre
+            //console.log("Municipio : " , municipio)
             var dict = [];
             // key = fecha
             // value = paro
-            for(var k in municipio) {
-                var value = municipio[k];
+            for (var k in munis) {
+                var value = munis[k];
                 fecha = k
                 //console.log("fecha -- " , fecha)
                 //console.log("dato -- " , value)
                 month = fecha.split(" ")[1]
                 year = fecha.split(" ")[3]
                 //console.log(fecha)
-                fecha = parseTiempo(year+""+month+"01")
+                fecha = parseTiempo(year + "" + month + "01")
                 //console.log(fecha)
                 dict.push({date: fecha, temperature: value})
 
             }
             /*console.log("Municipio: " , nombre)
-            console.log("valores: " , dict)*/
-            cities.push( {
+             console.log("valores: " , dict)*/
+            cities.push({
 
                 // id = nombre del municipio
                 id: nombre,
                 values: dict
             })
-        };
-        console.log("------------------")
-        console.log("Cities:")
-        console.log(cities)
-        console.log("Cities[0] " , cities[0])
+        }
+        ;
+        /*console.log("------------------")
+         console.log("Cities:")
+         console.log(cities)
+         console.log("Cities[0] " , cities[0])*/
 
+        print()
+    });
+    // fin csv
+
+
+    function print() {
+        console.log("Print cities ", cities)
         dominioYX = x.domain(d3.extent(cities[0].values, function (d) {
             fecha = d.date
 
             /*month = fecha.split(" ")[2]
-            year = fecha.split(" ")[3]
+             year = fecha.split(" ")[3]
 
-            fecha = parseTime(year+""+month+"01")*/
+             fecha = parseTime(year+""+month+"01")*/
             //console.log("into x.domain, returning : " ,d.fecha)
 
             return fecha;
         }));
 
 
-
         /*dominioY = y.domain([
-            d3.min(cities[0].values, function (c) {
-                return c.temperature
-            }
-             ),
-            d3.max(cities[0].values, function (c) {
-                return c.temperature
-            })
-        ]);*/
+         d3.min(cities[0].values, function (c) {
+         return c.temperature
+         }
+         ),
+         d3.max(cities[0].values, function (c) {
+         return c.temperature
+         })
+         ]);*/
         dominioY = y.domain([
             d3.min(cities, function (c) {
-                return d3.min(c.values, function (d) {
-                    /*console.log("d --- " , d)
-                    console.log("d --- " , d.temperature)*/
-                    //console.log("y.domain d3.min " , d)
-                    return d.temperature;
-                });
-            }
-             ),
+                    return d3.min(c.values, function (d) {
+                        /*console.log("d --- " , d)
+                         console.log("d --- " , d.temperature)*/
+                        //console.log("y.domain d3.min " , d)
+                        return d.temperature;
+                    });
+                }
+            ),
             d3.max(cities, function (c) {
                 return d3.max(c.values, function (d) {
                     return d.temperature;
                 });
             })
         ]);
-        console.log("Dominio de Y = " , dominioY)
 
         z.domain(cities.map(function (c) {
             //console.log("z.domain c " , c)
@@ -149,10 +189,10 @@
             .attr("y", 6)
             .attr("dy", "0.71em")
             .attr("fill", "#000")
-            .text("Temperature, ºF");
+            .text("Paro, ºP");
 
-        console.log("--------------------------------------------")
-        console.log("cities: ", cities)
+        /*console.log("--------------------------------------------")
+         console.log("cities: ", cities)*/
         var city = g.selectAll(".city")
             .data(cities)
             .enter().append("g")
@@ -179,17 +219,17 @@
             .attr("transform", function (d) {
                 //fecha = parseTime(key)
                 /*month = d.value.date.split(" ")[2]
-                year = d.value.date.split(" ")[3]
+                 year = d.value.date.split(" ")[3]
 
-                fecha = parseTime(year+""+month+"01")*/
+                 fecha = parseTime(year+""+month+"01")*/
                 fecha = d.value.date
-                /*console.log("----------Transform---------")
-                console.log("transform date " , fecha)
-                console.log("trasnform x(d.value.date) " , x(fecha))
-                console.log("trasnform d.value " , d.value)
-                console.log("trasnform d.value.temperature " , d.value.temperature)
-                console.log("trasnform y(d.value.temperature) " , y(d.value.temperature))
-                console.log("-------------------")*/
+                console.log("----------Transform---------")
+                console.log("transform date ", fecha)
+                console.log("trasnform x(d.value.date) ", x(fecha))
+                console.log("trasnform d.value ", d.value)
+                console.log("trasnform d.value.temperature ", d.value.temperature)
+                console.log("trasnform y(d.value.temperature) ", y(d.value.temperature))
+                console.log("-------------------")
                 return "translate(" + x(fecha) + "," + y(d.value.temperature) + ")";
             })
             .attr("x", 3)
@@ -197,13 +237,122 @@
             .style("font", "10px sans-serif")
             .text(function (d) {
                 /*console.log("-----.text-----")
-                console.log("text d: ", d)*/
+                 console.log("text d: ", d)*/
                 return d.id;
             });
-    });    // fin csv
+    }
 
-    function print(d){
-        console.log(d)
+    // funcion que recarga las variables con los municipios dados
+    // m = lista de municipios
+    function reload(m_list) {
+        var parseTiempo = d3.timeParse("%Y%b%d");
+        console.log("Reloading ", m_list)
+        cities = []
+        //var cities = data.columns.slice(1,3).map(function (id) {
+        //var cities = data.forEach(function(id) {
+        longitud = m_list.length
+        for (var n = 0; n < longitud; n++) {
+            // id = fecha -> 2008-05-01
+            console.log("--------------------------")
+            console.log("id ", m_list[n])
+            municipio = data[n]
+            nombre = municipio[""]
+            var munis = jQuery.extend({}, municipio) // hacemos una copia, para no borrar el original
+            delete munis[""]; // eliminamos el nombre
+            //console.log("Nombre : " , nombre)
+            //console.log("Municipio : " , munis)
+            var dict = [];
+            // key = fecha
+            // value = paro
+            for (var k in munis) {
+                var value = munis[k];
+                fecha = k
+                //console.log("fecha -- " , fecha)
+                //console.log("dato -- " , value)
+                month = fecha.split(" ")[1]
+                year = fecha.split(" ")[3]
+                //console.log(fecha)
+                fecha = parseTiempo(year + "" + month + "01")
+                //console.log(fecha)
+                dict.push({date: fecha, temperature: value})
+
+
+            }
+
+            /*console.log("Municipio: " , nombre)
+             console.log("valores: " , dict)*/
+            cities.push({
+
+                // id = nombre del municipio
+                id: nombre,
+                values: dict
+            })
+        }
+        ;
+        console.log("------------------")
+        console.log("Cities:")
+        console.log(cities)
+
+        // Get the data again
+        /*d3.csv("data-alt.csv", function(error, data) {
+         data.forEach(function(d) {
+         d.date = parseDate(d.date);
+         d.close = +d.close;
+         });
+
+         });*/
+        // Scale the range of the data again
+        /*x.domain(d3.extent(data, function(d) { return d.date; }));
+         y.domain([0, d3.max(data, function(d) { return d.close; })]);*/
+
+        dominioYX = x.domain(d3.extent(cities[0].values, function (d) {
+            fecha = d.date
+
+            /*month = fecha.split(" ")[2]
+             year = fecha.split(" ")[3]
+
+             fecha = parseTime(year+""+month+"01")*/
+            //console.log("into x.domain, returning : " ,d.fecha)
+
+            return fecha;
+        }));
+
+        dominioY = y.domain([
+            d3.min(cities, function (c) {
+                    return d3.min(c.values, function (d) {
+                        /*console.log("d --- " , d)
+                         console.log("d --- " , d.temperature)*/
+                        //console.log("y.domain d3.min " , d)
+                        return d.temperature;
+                    });
+                }
+            ),
+            d3.max(cities, function (c) {
+                return d3.max(c.values, function (d) {
+                    return d.temperature;
+                });
+            })
+        ]);
+
+        z.domain(cities.map(function (c) {
+            //console.log("z.domain c " , c)
+            return c.id;
+        }));
+
+        // Select the section we want to apply our changes to
+        var svg = d3.select("svg").transition();
+
+        // Make the changes
+        svg.select(".line")   // change the line
+            .duration(750)
+            .attr("d", line(cities.values));
+        /*svg.select("axis.axis--x") // change the x axis
+            .duration(750)
+            .call(xAxis);
+        svg.select("axis.axis--y") // change the y axis
+            .duration(750)
+            .call(yAxis);*/
+
     }
 
     function type(d, a, columns) {
@@ -231,4 +380,47 @@
         return dict;
     }
 
+    $(document).ready(function () {
+        console.log("JQ ")
+        var consulta;
+
+        //hacemos focus al campo de búsqueda
+        $("#busqueda").focus();
+
+        //comprobamos si se pulsa una tecla
+        $("#busqueda").keyup(function (e) {
+
+            //obtenemos el texto introducido en el campo de búsqueda
+            consulta = $("#busqueda").val();
+
+            //hace la búsqueda
+            try {
+                res = cod_muns[consulta]
+                if (res != undefined) {
+                    console.log("Municipio encontrado:  ", res)
+                    $("#resultado").empty();
+                    $("#resultado").append(res);
+                    lista = ["Cullera", "Zarra"]
+                    f(lista);
+                }
+            }
+            catch (err) {
+                //console.log("Busqueda: " , err)
+            }
+
+
+        });
+
+    });
 </script>
+
+<body>
+
+<div class="box">
+    <h4>Inserte el código del municipio</h4>
+    <input type="text" id="busqueda"/>
+    <div id="resultado"></div>
+</div>
+
+</body>
+</html>

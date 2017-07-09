@@ -8,23 +8,14 @@ style.use('ggplot')
 
 path = "data/"
 codificacion = 'cp1252'
-
-"""Cada columna es un mes a partir del 2006"""
-# el dataset actual llega hasta mayo de 2017, este incluido
-def merge_csv(path, dato="tot_paro_registrado", dir = "results",file_name_dest=None):
-    if file_name_dest is None:
-        path_destino  = os.path.join(dir, dato+".csv")
-    else:
-        path_destino  = os.path.join(dir, file_name_dest+".csv")
-    cod_com_valenciana = 10
-    index = ['cod_mes',
+index = ['cod_mes',
              'mes',
-             'cod_CA',
+             'cod_CA', # 2
              'CA',
              'cod_prov',
              'prov',
-             'cod_mun',
-             'mun',
+             'cod_mun', #6
+             'mun', # 7
              'tot_paro_registrado',
              'paro_edad_hombre25',
              'paro_edad_hombre25_45',
@@ -38,6 +29,15 @@ def merge_csv(path, dato="tot_paro_registrado", dir = "results",file_name_dest=N
              'paro_servicios',
              'paro_sin_empleo_anterior',
              ]
+"""Cada columna es un mes a partir del 2006"""
+# el dataset actual llega hasta mayo de 2017, este incluido
+def merge_csv(path, dato="tot_paro_registrado", dir = "results",file_name_dest=None):
+    if file_name_dest is None:
+        path_destino  = os.path.join(dir, dato+".csv")
+    else:
+        path_destino  = os.path.join(dir, file_name_dest+".csv")
+    cod_com_valenciana = 10
+
     lst = os.listdir(path)
     lst.sort()
     res_municipios_total = dict()
@@ -67,7 +67,7 @@ def merge_csv(path, dato="tot_paro_registrado", dir = "results",file_name_dest=N
         os.mkdir(dir)
     res_municipios_total_csv = res_municipios_total.to_csv(path_destino, sep=',', encoding='utf-8',header=True)
 
-    return res_municipios_total_csv,res_municipios_total
+    return res_municipios_total_csv,res_municipios_total,df
 
 """Se Espera un dict:
 keys = municipio
@@ -106,13 +106,25 @@ def copy_into_dict(d=dict(), keys="",values=[]):
         d[keys[i]] = arr
     return d
 
+"""Creacion de csv con codigo_municipio:municipio"""
+def codigos_municipios(df, dir = "results",file_name_dest=None):
+    if file_name_dest is None:
+        path_destino  = os.path.join(dir, "codigos_municipios.csv")
+    else:
+        path_destino  = os.path.join(dir, file_name_dest+".csv")
+    interes = df[['cod_mun','mun']]
+    print("-"*100)
+    print(interes)
+    interes.to_csv(path_destino, sep=',', encoding='utf-8', header=True,index=False)
 
+csv, df, df_all = merge_csv(path, file_name_dest="tot_paro_registrado_comas")
 
-csv, df = merge_csv(path, file_name_dest="tot_paro_registrado_comas")
-
+codigos_municipios(df_all)
+"""
 row = df.loc['Ondara']
 row.plot(kind='bar')
 plt.legend(loc=4)
 plt.xlabel('Fechas')
 plt.ylabel('Paro total registrado')
 plt.show()
+"""
