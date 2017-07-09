@@ -5,13 +5,24 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 </head>
 <style>
+    body{
+        height: 100%;
+    }
     .box {
         position: static;
         border-style: solid;
-        border-color: #ff0000 #0000ff;
+        border-color: #ff0000 ;
+        height:300px;
     }
-    municipio{
+    .municipio{
+
+        margin-top: 0.4%;
         margin-right: 1%;
+        border-style: solid;
+        border-color: #4dff36;
+        max-width: 100px;
+        position: relative;
+        float: left;
     }
     .axis--x path {
         display: none;
@@ -459,17 +470,20 @@
         $("#search").click(function () {
             lista = []
             municipios = $("municipio")
-            console.log("muns ",cod_muns)
             for(var n =0; n<municipios.length; n++){
                 m = municipios[n].innerText
 
                 lista.push(m)
             }
-            municipios.remove()
+            //municipios.remove()
             console.log("lista ", lista)
             //lista = ["Cullera", "Zarra", "Manuel"]
             reload(lista);
         });
+
+        deleteM = $(".eliminarMunicipio").click(function (){
+               $(this).parent().remove();
+         });
 
         $("#add").click(function () {
             consulta = $("#busqueda").val();
@@ -486,12 +500,36 @@
             catch (err) {
                 //console.log("Busqueda: " , err)
             }
-            $( ".buscar" ).append( '<municipio>'+res+'<\/municipio>' );
+            var $elements = $(crearBotonMunicipio(res));
+
+
+            $elements.bind({
+              click: function(e) {
+                  console.log("e ---> " , e)
+                  $(this).remove()
+              },
+              mouseenter: function() {
+                // Do something on mouseenter
+              }
+            });
+            xfoo= $( ".buscar" );
+            xfoo.append($elements);
+
             $("#busqueda").val('');
         });
+
+
          $("#borrar").click(function (){
-              $( "municipio" ).remove()
+              $( ".municipio" ).remove()
          });
+
+         function crearBotonMunicipio(name){
+             var first = '<div class="municipio"><button class="ui-button ui-widget ui-corner-all eliminarMunicipio">X</button> <municipio>'
+                 second = '</municipio></div>'
+             return first + name + second
+         }
+
+
     });
 
 </script>
@@ -500,15 +538,13 @@
 
 <div class="box">
     <h4>Inserte el código del municipio</h4>
-    <input type="text" id="busqueda"/>
-    <button class="ui-button ui-widget ui-corner-all", id="add">Añadir</button>
+    <input type="text" id="busqueda"/><div id="resultado"></div>
+    <button class="ui-button ui-widget u    i-corner-all", id="add">Añadir</button>
     <button class="ui-button ui-widget ui-corner-all" id="search">Buscar</button>
     <button class="ui-button ui-widget ui-corner-all" id="borrar">borrar</button>
     <div class="buscar">
-        <municipio>Manuel</municipio>
-        <municipio>Zarra</municipio>
     </div>
-    <div id="resultado"></div>
+
 </div>
 
 </body>
