@@ -10,9 +10,7 @@
         border-style: solid;
         border-color: #ff0000 #0000ff;
     }
-    municipio{
-        margin-right: 1%;
-    }
+
     .axis--x path {
         display: none;
     }
@@ -24,7 +22,7 @@
     }
 
 </style>
-<svg width="1500" height="500"></svg>
+<svg width="900" height="500"></svg>
 <script src="http://d3js.org/d3.v4.min.js"></script>
 <script>
 
@@ -156,7 +154,8 @@
          return c.temperature
          })
          ]);*/
-        y.domain([
+		 //var color = d3.schemeCategory10();
+        dominioY = y.domain([
             d3.min(cities, function (c) {
                     return d3.min(c.values, function (d) {
                         /*console.log("d --- " , d)
@@ -210,13 +209,20 @@
             })
             .style("stroke", function (d) {
                 return z(d.id);
-            });
+            })
+			.on("click",function(){ console.log("Clicked");
+			 
+			 d3.select(this).style("stroke-width",5);
+			})
+			.on("click",function(){ 
+			d3.select(this).style("stroke-width",2);}
+			
+			);
 
         city.append("text")
-            .attr("class","text")
             .datum(function (d) {
-                console.log("----------city.append text datum---------")
-                console.log("d: ", d)
+                //console.log("----------city.append text datum---------")
+                //console.log("d: ", d)
                 return {id: d.id, value: d.values[d.values.length - 1]};
             })
             .attr("transform", function (d) {
@@ -239,10 +245,101 @@
             .attr("dy", "0.35em")
             .style("font", "10px sans-serif")
             .text(function (d) {
-                console.log("-----.text-----")
-                console.log("text d: ", d)
+                /*console.log("-----.text-----")
+                 console.log("text d: ", d)*/
                 return d.id;
             });
+			
+		var mouseG = svg.append("g")
+		.attr("class", "mouse-over-effects");
+
+		mouseG.append("path") // this is the black vertical line to follow mouse
+		.attr("class", "mouse-line")
+		.style("stroke", "black")
+		.style("stroke-width", "1px")
+		.style("opacity", "0")
+		//.attr("transform", "translate(50,20)");
+			
+		var lines = document.getElementsByClassName('line');
+		
+		var mousePerLine = mouseG.selectAll('.mouse-per-line')
+		.data(cities)
+		.enter()
+		.append("g")
+		.attr("class", "mouse-per-line");
+			
+	mousePerLine.append("circle")
+      .attr("r", 7)
+      .style("stroke", function(d) {
+        return "black";
+      })
+	  .style("fill", "none")
+      .style("stroke-width", "1px")
+      .style("opacity", "0")
+	  .attr("transform", "translate(0,0)");
+			
+	   mousePerLine.append("text")
+      .attr("transform", "translate(10,3)");
+
+
+ mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
+      .attr('width', width) // can't catch mouse events on a g element
+      .attr('height', height)
+      .attr('fill', 'none')
+      .attr('pointer-events', 'all')
+      .on('mouseout', function() { // on mouse out hide line, circles and text
+        d3.select(".mouse-line")
+          .style("opacity", "0");
+        d3.selectAll(".mouse-per-line circle")
+          .style("opacity", "0");
+        d3.selectAll(".mouse-per-line text")
+          .style("opacity", "0");
+      })
+      .on('mouseover', function() { // on mouse in show line, circles and text
+        d3.select(".mouse-line")
+          .style("opacity", "1");
+        d3.selectAll(".mouse-per-line circle")
+          .style("opacity", "1");
+        d3.selectAll(".mouse-per-line text")
+          .style("opacity", "1");
+      })
+      .on('mousemove', function() { // mouse moving over canvas
+        var mouse = d3.mouse(this);
+        d3.select(".mouse-line")
+          .attr("d", function() {
+            var d = "M" + mouse[0] + "," + height;
+            d += " " + mouse[0] + "," + 0;
+            return d;
+          });
+	  
+	  d3.selectAll(".mouse-per-line")
+          .attr("transform", function(d, i) {
+            //console.log(width/mouse[0])
+            var xDate = x.invert(mouse[0]),
+                bisect = d3.bisector(function(d) { return d.date; }).right;
+                idx = bisect(d.values, xDate);
+            
+            var beginning = 0,
+                end = lines[i].getTotalLength(),
+                target = null;
+
+            while (true){
+              target = Math.floor((beginning + end) / 2);
+              pos = lines[i].getPointAtLength(target);
+              if ((target === end || target === beginning) && pos.x !== mouse[0]) {
+                  break;
+              }
+              if (pos.x > mouse[0])      end = target;
+              else if (pos.x < mouse[0]) beginning = target;
+              else break; //position found
+            }
+            
+            d3.select(this).select('text')
+              .text(y.invert(pos.y).toFixed(2));
+              
+            return "translate(" + mouse[0] + "," + pos.y +")";
+          });
+	  });
     }
 
     // funcion que recarga las variables con los municipios dados
@@ -254,25 +351,12 @@
         //var cities = data.columns.slice(1,3).map(function (id) {
         //var cities = data.forEach(function(id) {
         longitud = m_list.length
-        console.log("length " ,data.length)
-
-        for (var n = 0; n < data.length && cities.length < m_list.length; n++) {
+        for (var n = 0; n < longitud; n++) {
             // id = fecha -> 2008-05-01
+            console.log("--------------------------")
+            console.log("id ", m_list[n])
             municipio = data[n]
             nombre = municipio[""]
-            itsCity = false
-            // Buscamos el municipio que nos interesa
-            for (var i = 0; i < m_list.length && !itsCity; i++) {
-                if (nombre == m_list[i]) {
-                    itsCity = true
-                }
-            }
-            if(!itsCity) continue;
-            // fin busquda
-            console.log("--------------------------")
-            console.log("municipio encontrado ", municipio)
-
-
             var munis = jQuery.extend({}, municipio) // hacemos una copia, para no borrar el original
             delete munis[""]; // eliminamos el nombre
             //console.log("Nombre : " , nombre)
@@ -303,21 +387,42 @@
                 id: nombre,
                 values: dict
             })
-        };
+        }
+        ;
         console.log("------------------")
         console.log("Cities:")
         console.log(cities)
 
+        // Get the data again
+        /*d3.csv("data-alt.csv", function(error, data) {
+         data.forEach(function(d) {
+         d.date = parseDate(d.date);
+         d.close = +d.close;
+         });
+
+         });*/
+        // Scale the range of the data again
+        /*x.domain(d3.extent(data, function(d) { return d.date; }));
+         y.domain([0, d3.max(data, function(d) { return d.close; })]);*/
+
         dominioYX = x.domain(d3.extent(cities[0].values, function (d) {
             fecha = d.date
+
+            /*month = fecha.split(" ")[2]
+             year = fecha.split(" ")[3]
+
+             fecha = parseTime(year+""+month+"01")*/
+            //console.log("into x.domain, returning : " ,d.fecha)
 
             return fecha;
         }));
 
-        y.domain([
+        dominioY = y.domain([
             d3.min(cities, function (c) {
                     return d3.min(c.values, function (d) {
-                        //console.log(" -----> ", d)
+                        /*console.log("d --- " , d)
+                         console.log("d --- " , d.temperature)*/
+                        //console.log("y.domain d3.min " , d)
                         return d.temperature;
                     });
                 }
@@ -333,74 +438,21 @@
             //console.log("z.domain c " , c)
             return c.id;
         }));
-        var ax = g.selectAll(".axis--y")
 
-        ax.remove()
-        g.append("g")
-            .attr("class", "axis axis--y")
-            .call(d3.axisLeft(y))
-            .append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", 6)
-            .attr("dy", "0.71em")
-            .attr("fill", "#000")
-            .text("Paro, ºP");
+        // Select the section we want to apply our changes to
+        var svg = d3.select("svg").transition();
 
-        // datos
-        var city = g.selectAll(".city")
-            /*.data(cities)
-            .enter().append("g")
-            .attr("class", "city");*/
-        city.remove()
+        // Make the changes
+        svg.select(".line")   // change the line
+            .duration(750)
+            .attr("d", line(cities.values));
+        /*svg.select("axis.axis--x") // change the x axis
+            .duration(750)
+            .call(xAxis);
+        svg.select("axis.axis--y") // change the y axis
+            .duration(750)
+            .call(yAxis);*/
 
-        var city = g.selectAll(".city")
-            .data(cities)
-            .enter().append("g")
-            .attr("class", "city");
-
-        city.append("path")
-            .attr("class", "line")
-            .attr("d", function (d) {
-                //console.log("----------city.append path - attr d ---------")
-                //console.log("d: ", d)
-
-                return line(d.values);
-            })
-            .style("stroke", function (d) {
-                return z(d.id);
-            });
-
-        city.append("text")
-            .attr("class","text")
-            .datum(function (d) {
-                console.log("----------city.append text datum---------")
-                console.log("d: ", d)
-                return {id: d.id, value: d.values[d.values.length - 1]};
-            })
-            .attr("transform", function (d) {
-                //fecha = parseTime(key)
-                /*month = d.value.date.split(" ")[2]
-                 year = d.value.date.split(" ")[3]
-
-                 fecha = parseTime(year+""+month+"01")*/
-                fecha = d.value.date
-                console.log("----------Transform---------")
-                console.log("transform date ", fecha)
-                console.log("trasnform x(d.value.date) ", x(fecha))
-                console.log("trasnform d.value ", d.value)
-                console.log("trasnform d.value.temperature ", d.value.temperature)
-                console.log("trasnform y(d.value.temperature) ", y(d.value.temperature))
-                console.log("-------------------")
-                return "translate(" + x(fecha) + "," + y(d.value.temperature) + ")";
-            })
-            .attr("x", 3)
-            .attr("dy", "0.35em")
-            .style("font", "10px sans-serif")
-            .text(function (d) {
-                console.log("-----.text-----")
-                console.log("text d: ", d)
-                return d.id;
-            });
     }
 
     function type(d, a, columns) {
@@ -429,6 +481,7 @@
     }
 
     $(document).ready(function () {
+        console.log("JQ ")
         var consulta;
 
         //hacemos focus al campo de búsqueda
@@ -444,9 +497,11 @@
             try {
                 res = cod_muns[consulta]
                 if (res != undefined) {
+                    console.log("Municipio encontrado:  ", res)
                     $("#resultado").empty();
                     $("#resultado").append(res);
-
+                    lista = ["Cullera", "Zarra"]
+                    f(lista);
                 }
             }
             catch (err) {
@@ -456,44 +511,7 @@
 
         });
 
-        $("#search").click(function () {
-            lista = []
-            municipios = $("municipio")
-            console.log("muns ",cod_muns)
-            for(var n =0; n<municipios.length; n++){
-                m = municipios[n].innerText
-
-                lista.push(m)
-            }
-            municipios.remove()
-            console.log("lista ", lista)
-            //lista = ["Cullera", "Zarra", "Manuel"]
-            reload(lista);
-        });
-
-        $("#add").click(function () {
-            consulta = $("#busqueda").val();
-
-            //hace la búsqueda
-            try {
-                res = cod_muns[consulta]
-                if (res != undefined) {
-                    $("#resultado").empty();
-                    $("#resultado").append(res);
-
-                }
-            }
-            catch (err) {
-                //console.log("Busqueda: " , err)
-            }
-            $( ".buscar" ).append( '<municipio>'+res+'<\/municipio>' );
-            $("#busqueda").val('');
-        });
-         $("#borrar").click(function (){
-              $( "municipio" ).remove()
-         });
     });
-
 </script>
 
 <body>
@@ -501,13 +519,6 @@
 <div class="box">
     <h4>Inserte el código del municipio</h4>
     <input type="text" id="busqueda"/>
-    <button class="ui-button ui-widget ui-corner-all", id="add">Añadir</button>
-    <button class="ui-button ui-widget ui-corner-all" id="search">Buscar</button>
-    <button class="ui-button ui-widget ui-corner-all" id="borrar">borrar</button>
-    <div class="buscar">
-        <municipio>Manuel</municipio>
-        <municipio>Zarra</municipio>
-    </div>
     <div id="resultado"></div>
 </div>
 
